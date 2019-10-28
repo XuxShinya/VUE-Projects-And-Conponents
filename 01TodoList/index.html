@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../../lib/vue-2.4.0.js"></script>
+  <link rel="stylesheet" href="../../lib/iconfont/1.0.9/iconfont.css">
+  <link href="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./index.css">
+  <script src="./index.js"></script>
+</head>
+
+<body>
+  <div id="todo">
+    <app-header :flag='menuDisFlag' @change-menu-flag="changeMenuFlag" :btnflag='btnDisFlag'
+      @change-btn-flag="changeBtnFlag" @add-todo='addTodo'></app-header>
+    <div class="main">
+      <transition name='content-change' mode='out-in'>
+        <todo-undone v-if='undonef' :undonetodo="undoneTodos" @del-todo='delTodo' @done-todo='doneTodo'>
+        </todo-undone>
+        <todo-done v-if='donef' @del-todo='delTodo2' :donetodo='doneTodos'></todo-done>
+      </transition>
+    </div>
+    <!-- <transition name='showAddTodo'>
+      <add-todo class="addTodo" v-if='btnDisFlag'></add-todo>
+    </transition> -->
+  </div>
+  <template id='app-header'>
+    <div class="header">
+      <div class="menuBtn" @click='showMenu'><span class="Hui-iconfont Hui-iconfont-menu"></span></div>
+      <div class="headerText">Todo</div>
+      <transition name='menuShow'>
+        <div class="coverpage" v-if="flag" @click.self='showMenu'>
+          <div class='menuPage' v-if='flag'>
+            <div @click='showUndone'><span class="glyphicon glyphicon-time"></span> 未完成</div>
+            <div @click='showDone'><span class="glyphicon glyphicon-ok"></span> 已完成</div>
+            <!-- <div @click='showAll'><span class="glyphicon glyphicon-list-alt"></span> 全部</div> -->
+          </div>
+        </div>
+      </transition>
+      <transition name='showAddTodo'>
+        <div class="addTodo" v-if='btnflag'>
+          <input type="text" v-model.trim='data' placeholder="添加新任务..." class='addTodoInput'>
+        </div>
+      </transition>
+      <div class="btnBox">
+        <transition name='confiBtnShow'>
+          <div class="confirBtn" v-if='btnflag' @click='addTodo'>确认</div>
+        </transition>
+        <div class="circleBtn" @click='showConfirBtn' :style="{transform:btnflag ? 'rotate(-45deg)':'rotate(0deg)'}">
+          <span class="Hui-iconfont Hui-iconfont-add"></span></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="todo-undone">
+
+    <div class="todo-undone">
+
+      <div>
+        <!-- <transition-group appear name='itemChange'> -->
+        <div class="todoItem" v-for='(item,index) in todo' :key="item.title">
+          {{item.title}}
+          <div class="oper-btn" @click='doneTodo(index)'><span class="glyphicon glyphicon-ok-circle"></span></div>
+          <div class="oper-btn" @click='delTodo(index)'><span class="glyphicon glyphicon-trash"></span></div>
+          <!-- </transition-group> -->
+        </div>
+      </div>
+
+    </div>
+  </template>
+
+  <template id="todo-done">
+    <div class="todo-done">
+      <div class="todoItem" v-for='(item,index) in donetodo'>
+        {{item.title}}
+        <!-- <div class="oper-btn" @click='doneTodo(index)'><span class="glyphicon glyphicon-ok-circle"></span></div> -->
+        <div class="oper-btn" @click='delTodo(index)'><span class="glyphicon glyphicon-trash"></span></div>
+      </div>
+    </div>
+  </template>
+  <!-- <template id="add-todo">
+    <transition>
+      <div>
+        <input type="text"  value="添加新任务..." class='addTodoInput'>
+      </div>
+    </transition>
+  </template> -->
+  <script>
+    var appHeader = {
+      props: ['flag', 'btnflag',],
+      template: '#app-header',
+      data() {
+        return {
+          myflag: 1,
+          mytransform: 'rotate(0deg)',
+          data: ''
+        }
+      },
+      methods: {
+        showMenu: function () {
+          this.$emit("change-menu-flag");
+        },
+        showConfirBtn: function () {
+          this.$emit("change-btn-flag");
+        },
+
+        showUndone: function () {
+          this.$emit('change-menu-flag', 'undone');
+        },
+        showDone: function () {
+          this.$emit('change-menu-flag', 'done');
+        },
+        showAll: function () {
+          this.$emit('change-menu-flag', 'all');
+        },
+
+        addTodo: function () {
+          if (this.data == '') return
+          console.log(this.data)
+          this.$emit('add-todo', this.data)
+          this.data = ''
+          this.$emit("change-btn-flag");
+        }
+      }
+    }
+
+
+    var todoUndone = {
+      props: ['undonetodo'],
+      template: '#todo-undone',
+      data() {
+        return {
+          todo: this.undonetodo
+        }
+      },
+      methods: {
+        delTodo: function (index) {
+          this.$emit('del-todo', index)
+        },
+        doneTodo: function (index) {
+          this.$emit('done-todo', index)
+        }
+      },
+    }
+
+    var todoDone = {
+      props: ['donetodo'],
+      data() {
+        return {
+          todo: this.donetodo
+        }
+      },
+      template: '#todo-done',
+      methods: {
+        delTodo: function (index) {
+          this.$emit('del-todo', index)
+        },
+      },
+    }
+
+
+    var addTodo = {
+      props: [],
+      data() {
+        return {
+        }
+      },
+      template: '#add-todo'
+    }
+
+
+    var vm = new Vue({
+      el: '#todo',
+      data: {
+        menuDisFlag: false,
+        btnDisFlag: false,
+        displayFlag: '',
+        todos: [
+          {
+            id: 1,
+            isDone: false,
+            title: '这是一条待做事件!'
+          },
+          {
+            id: 2,
+            isDone: true,
+            title: '这是一条已完成事件!'
+          },
+          {
+            id: 3,
+            isDone: false,
+            title: '点击右下角的加号按钮进行编辑!'
+          },
+        ],
+        doneTodos: [],
+        undoneTodos: [],
+        undonef: true,
+        donef: false,
+      },
+      components: {
+        'app-header': appHeader,
+        'todo-undone': todoUndone,
+        'add-todo': addTodo,
+        'todo-done': todoDone
+      },
+      created() {
+        this.undoneTodos = this.todos.filter(item => item.isDone == false),
+          this.doneTodos = this.todos.filter(item => item.isDone !== false)
+      },
+      methods: {
+        changeMenuFlag: function (index) {
+          this.menuDisFlag = !this.menuDisFlag;
+          console.log(this.menuDisFlag);
+          this.displayFlag = index;
+          if (this.displayFlag == 'done') {
+            this.undonef = false;
+            this.donef = true;
+            console.log('this.displayFlag value is:', this.displayFlag)
+          }
+          if (this.displayFlag == 'undone') {
+            this.donef = false;
+            this.undonef = true;
+            console.log('this.displayFlag value is:', this.displayFlag)
+          }
+
+        },
+        changeBtnFlag: function () {
+          this.btnDisFlag = !this.btnDisFlag;
+        },
+
+        delTodo: function (index) {
+          this.undoneTodos.splice(index, 1);
+        },
+        delTodo2: function (index) {
+          this.doneTodos.splice(index, 1);
+        },
+        doneTodo: function (index) {
+          this.undoneTodos[index].isDone = true;
+          let content = this.undoneTodos[index];
+          console.log('content:', content);
+          this.undoneTodos.splice(index, 1);
+          this.doneTodos.unshift(content);
+          console.log('donetodos:', this.doneTodos)
+          console.log('undoneTodos:', this.undoneTodos)
+        },
+        addTodo: function (data) {
+          console.log(data)
+          this.undoneTodos.push({ id: 10, isDone: false, title: data })
+          console.log(this.undoneTodos)
+        }
+      },
+      computed: {
+        // filterTodo: function () {
+        //   if (this.displayFlag == 'undone')
+        //     // console.log('undone')
+        //     return this.todos;
+
+        //   if (this.displayFlag == 'done') {
+        //     console.log('done')
+        //   }
+        //   if (this.displayFlag == 'all') {
+        //     console.log('all')
+        //   }
+        // }
+      }
+    })
+  </script>
+</body>
+
+</html>

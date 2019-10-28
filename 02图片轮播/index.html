@@ -1,0 +1,77 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../../lib/vue-2.4.0.js"></script>
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <!-- <img src="http://192.168.8.23:8080/assets/img/1564023405629.7661a543.png" alt=""> -->
+      <a v-show='i ==index' v-for='(item,i) in imgItem' :key="item.id">
+        <img :src="item.src" alt="">
+      </a>
+      <ul class="listItem">
+        <li @click="index=i" v-for='(item,i) in imgItem' :class='{active:i==index}'></li>
+      </ul>
+    </div>
+  </div>
+  <script>
+    var vm = new Vue({
+      el: '#app',
+      data() {
+        return {
+          index: 0,
+          imgItem: [
+            {
+              id: 0,
+              src: 'https://www.dummyimage.com/600x400/000/fff'
+            },
+            {
+              id: 1,
+              src: 'https://www.dummyimage.com/600x400/678/fff'
+            },
+            {
+              id: 2,
+              src: 'https://www.dummyimage.com/600x400/996/fff'
+            }
+          ]
+        }
+      },
+      created() {
+        // this.started()
+      },
+      mounted() {
+        // this.started()
+        setInterval(() => {
+          this.index++;
+          if (this.index > this.imgItem.length - 1) {
+            this.index = 0
+          }
+
+        }, 1000)
+      },
+      methods: {
+        // started: function () {
+        //   () => {
+        //     setInterval(() => {
+        //       this.index++;
+        //       if (this.index > this.imgItem.length - 1) {
+        //         this.index = 0
+        //       }
+
+        //     }, 1000)
+        //   }
+        // }
+      },
+
+    })
+  </script>
+</body>
+
+</html>
